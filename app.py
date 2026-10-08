@@ -61,11 +61,11 @@ with st.sidebar.expander("💰 Tarification Airbnb", expanded=True):
         "Prix moyen par nuitée (FCFA)", min_value=0, value=25_000, step=1_000)
     frais_menage_facture = st.number_input(
         "Frais de ménage facturé au voyageur (FCFA / réservation)",
-        min_value=0, value=5_000, step=500)
+        min_value=0, value=0, step=500)
     duree_sejour = st.number_input(
-        "Durée moyenne d'un séjour (nuits)", min_value=1.0, value=3.0, step=0.5)
+        "Durée moyenne d'un séjour (nuits)", min_value=1.0, value=1.0, step=0.5)
     commission_plateforme = st.slider(
-        "Commission de la plateforme (Airbnb, ~3%)", 0.0, 20.0, 3.0, step=0.5) / 100
+        "Commission de la plateforme (Airbnb, ~3%)", 0.0, 20.0, 0.0, step=0.5) / 100
 
 with st.sidebar.expander("🧹 Coûts variables", expanded=True):
     cout_menage_reel = st.number_input(
@@ -92,26 +92,29 @@ with st.sidebar.expander("🎲 Simulation", expanded=True):
     nb_simulations = st.slider("Nombre de simulations Monte Carlo", 100, 3000, 800, step=100)
     seed = st.number_input("Graine aléatoire (pour reproductibilité)", min_value=0, value=42, step=1)
 
-with st.sidebar.expander("👥 Répartition entre associés (5)", expanded=True):
+with st.sidebar.expander("👥 Répartition entre associés (4)", expanded=True):
     mode_parts = st.radio(
         "Comment calculer la part de chaque associé ?",
         ["Apport en capital (prorata)", "Parts fixes (%)"],
     )
+    noms_par_defaut = ["Princesse", "Marina", "Stacy", "Ronald"]
+    NB_ASSOCIES = len(noms_par_defaut)
 
     noms_associes = []
     valeurs_associes = []  # apport en FCFA (mode prorata) ou % (mode fixe)
-    default_apport = max(int((cout_amenagement + caution) / 5), 0)
+    default_apport = max(int((cout_amenagement + caution) / NB_ASSOCIES), 0)
+    default_part = 100.0 / NB_ASSOCIES  # 25 % chacun
 
-    for i in range(1, 6):
+    for i, nom_defaut in enumerate(noms_par_defaut, start=1):
         col_nom, col_val = st.columns([1.3, 1])
-        nom = col_nom.text_input(f"Nom associé {i}", value=f"Associé {i}", key=f"nom_{i}")
+        nom = col_nom.text_input(f"Nom associé {i}", value=nom_defaut, key=f"nom_{i}")
         if mode_parts == "Apport en capital (prorata)":
             val = col_val.number_input(
                 "Apport (FCFA)", min_value=0, value=default_apport, step=10_000, key=f"apport_{i}"
             )
         else:
             val = col_val.number_input(
-                "Part (%)", min_value=0.0, max_value=100.0, value=20.0, step=1.0, key=f"part_{i}"
+                "Part (%)", min_value=0.0, max_value=100.0, value=default_part, step=1.0, key=f"part_{i}"
             )
         noms_associes.append(nom)
         valeurs_associes.append(val)
